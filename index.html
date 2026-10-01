@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Anani — Le marché du Fenua</title>
+
+    <!-- Connexion à Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script>
+        const SUPABASE_URL = "https://yhjoqaskdmfvjvcyfbcg.supabase.co";
+        const SUPABASE_KEY = "sb_publishable_iolTFUxYRE_gRyEHZ_vJjw_0jRWwXqS";
+
+        const supabase = window.supabase.createClient(
+            SUPABASE_URL,
+            SUPABASE_KEY
+        );
+    </script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #faf8f5;
+            color: #222;
+        }
+
+        header {
+            background: white;
+            border-bottom: 1px solid #eee;
+            padding: 18px 6%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            letter-spacing: 3px;
+        }
+
+        .search {
+            flex: 1;
+            max-width: 500px;
+        }
+
+        .search input {
+            width: 100%;
+            padding: 13px 18px;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            font-size: 15px;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            border: none;
+            cursor: pointer;
+            padding: 12px 18px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .sell-button {
+            background: #222;
+            color: white;
+        }
+
+        .account-button {
+            background: #eee;
+            color: #222;
+        }
+
+        nav {
+            background: white;
+            padding: 12px 6%;
+            display: flex;
+            gap: 25px;
+            border-bottom: 1px solid #eee;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: #333;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .hero {
+            padding: 80px 8%;
+            text-align: center;
+            background: #eee7df;
+        }
+
+        .hero h1 {
+            font-size: 46px;
+            margin-bottom: 15px;
+        }
+
+        .hero p {
+            font-size: 18px;
+            margin-bottom: 25px;
+            color: #555;
+        }
+
+        .hero button {
+            background: #222;
+            color: white;
+            padding: 14px 25px;
+        }
+
+        .section {
+            padding: 55px 7%;
+        }
+
+        .section h2 {
+            margin-bottom: 25px;
+            font-size: 28px;
+        }
+
+        .categories {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+        }
+
+        .category {
+            background: white;
+            padding: 18px;
+            border: 1px solid #eee;
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .category:hover {
+            background: #f1ece6;
+        }
+
+        .products {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+            gap: 20px;
+        }
+
+        .product {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid #eee;
+        }
+
+        .product img {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+        }
+
+        .product-info {
+            padding: 15px;
+        }
+
+        .product-info h3 {
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .price {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .city {
+            color: #777;
+            font-size: 13px;
+        }
+
+        footer {
+            background: #222;
+            color: white;
+            text-align: center;
+            padding: 35px;
+            margin-top: 40px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        .modal-content {
+            background: white;
+            width: 90%;
+            max-width: 500px;
+            padding: 30px;
+            border-radius: 12px;
+        }
+
+        .modal-content h2 {
+            margin-bottom: 20px;
+        }
+
+        .modal-content input,
+        .modal-content select,
+        .modal-content textarea {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 12px;
+            border: 1px solid #ddd;
+            border-radius: 7px;
+            font-family: Arial, sans-serif;
+        }
+
+        .modal-content textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .close {
+            background: #eee;
+        }
+
+        .submit {
+            background: #222;
+            color: white;
+        }
+
+        @media (max-width: 700px) {
+            header {
+                flex-wrap: wrap;
+            }
+
+            .search {
+                order: 3;
+                width: 100%;
+                max-width: none;
+            }
+
+            nav {
+                overflow-x: auto;
+            }
+
+            .hero h1 {
+                font-size: 36px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <div class="logo">ANANI</div>
+
+    <div class="search">
+        <input
+            type="text"
+            id="searchInput"
+            placeholder="Rechercher un article..."
+            oninput="searchProducts()"
+        >
+    </div>
+
+    <div class="buttons">
+        <button class="sell-button" onclick="openSell()">Vendre</button>
+        <button class="account-button" onclick="openAccount()">Mon compte</button>
+    </div>
+</header>
+
+<nav>
+    <a onclick="showHome()">Accueil</a>
+    <a onclick="filterCategory('Vêtements')">Vêtements</a>
+    <a onclick="filterCategory('Accessoires')">Accessoires</a>
+    <a onclick="showNew()">Nouveautés</a>
+    <a onclick="openSell()">Vendre</a>
+</nav>
+
+<section class="hero">
+    <h1>Le marché du Fenua</h1>
+    <p>Achetez et vendez vos vêtements et accessoires facilement.</p>
+    <button onclick="scrollToProducts()">Découvrir les articles</button>
+</section>
+
+<section class="section">
+    <h2>Vêtements</h2>
+
+    <div class="categories">
+        <div class="category" onclick="filterSubcategory('Hauts')">Hauts</div>
+        <div class="category" onclick="filterSubcategory('Shorts')">Shorts</div>
+        <div class="category" onclick="filterSubcategory('Pantalons')">Pantalons</div>
+        <div class="category" onclick="filterSubcategory('Robes')">Robes</div>
+        <div class="category" onclick="filterSubcategory('Jupes')">Jupes</div>
+        <div class="category" onclick="filterSubcategory('Vestes & Manteaux')">Vestes & Manteaux</div>
+        <div class="category" onclick="filterSubcategory('Ensembles')">Ensembles</div>
+        <div class="category" onclick="filterSubcategory('Autres vêtements')">Autres vêtements</div>
+    </div>
+</section>
+
+<section class="section">
+    <h2>Accessoires de mode</h2>
+
+    <div class="categories">
+        <div class="category" onclick="filterSubcategory('Chaussures')">Chaussures</div>
+        <div class="category" onclick="filterSubcategory('Sacs')">Sacs</div>
+        <div class="category" onclick="filterSubcategory('Bijoux')">Bijoux</div>
+        <div class="category" onclick="filterSubcategory('Lunettes')">Lunettes</div>
+        <div class="category" onclick="filterSubcategory('Chapeaux & Casquettes')">Chapeaux & Casquettes</div>
+        <div class="category" onclick="filterSubcategory('Ceintures')">Ceintures</div>
+        <div class="category" onclick="filterSubcategory('Accessoires cheveux')">Accessoires cheveux</div>
+        <div class="category" onclick="filterSubcategory('Autres accessoires')">Autres accessoires</div>
+    </div>
+</section>
+
+<section class="section" id="productsSection">
+    <h2>Articles disponibles</h2>
+
+    <div class="products" id="products"></div>
+</section>
+
+<footer>
+    <p>© 2026 Anani — Le marché du Fenua</p>
+</footer>
+
+<!-- Fenêtre Vendre -->
+<div class="modal" id="sellModal">
+    <div class="modal-content">
+        <h2>Mettre un article en vente</h2>
+
+        <input id="itemName" type="text" placeholder="Nom de l'article">
+
+        <select id="itemCategory">
+            <option value="">Choisir une catégorie</option>
+            <option>Hauts</option>
+            <option>Shorts</option>
+            <option>Pantalons</option>
+            <option>Robes</option>
+            <option>Jupes</option>
+            <option>Vestes & Manteaux</option>
+            <option>Ensembles</option>
+            <option>Chaussures</option>
+            <option>Sacs</option>
+            <option>Bijoux</option>
+            <option>Lunettes</option>
+            <option>Chapeaux & Casquettes</option>
+            <option>Ceintures</option>
+            <option>Accessoires cheveux</option>
+            <option>Autres</option>
+        </select>
+
+        <input id="itemPrice" type="number" placeholder="Prix en F CFP">
+
+        <input id="itemCity" type="text" placeholder="Ville">
+
+        <textarea id="itemDescription" placeholder="Description"></textarea>
+
+        <input id="itemImage" type="file" accept="image/*">
+
+        <div class="modal-buttons">
+            <button class="close" onclick="closeModals()">Annuler</button>
+            <button class="submit" onclick="addProduct()">Publier</button>
+        </div>
+    </div>
+</div>
+
+<!-- Fenêtre compte -->
+<div class="modal" id="accountModal">
+    <div class="modal-content">
+        <h2>Mon compte</h2>
+
+        <input type="email" id="email" placeholder="Adresse e-mail">
+
+        <input type="password" id="password" placeholder="Mot de passe">
+
+        <div class="modal-buttons">
+            <button class="close" onclick="closeModals()">Fermer</button>
+            <button class="submit" onclick="login()">Se connecter</button>
+        </div>
+
+        <p id="accountMessage" style="margin-top:15px;"></p>
+    </div>
+</div>
+
+<script>
+
+let products = [
+    {
+        name: "Robe fleurie",
+        category: "Robes",
+        price: 3500,
+        city: "Papeete",
+        image: "https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&w=600&q=80"
+    },
+    {
+        name: "Sac en cuir",
+        category: "Sacs",
+        price: 5000,
+        city: "Faaa",
+        image: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=600&q=80"
+    },
+    {
+        name: "Chaussures",
+        category: "Chaussures",
+        price: 4500,
+        city: "Punaauia",
+        image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=600&q=80"
+    },
+    {
+        name: "Lunettes de soleil",
+        category: "Lunettes",
+        price: 2500,
+        city: "Papeete",
+        image: "https://images.unsplash.com/photo-1511499767150-a48a237f0083?auto=format&fit=crop&w=600&q=80"
+    }
+];
+
+function displayProducts(list = products) {
+
+    const container = document.getElementById("products");
+
+    container.innerHTML = "";
+
+    if (list.length === 0) {
+        container.innerHTML = "<p>Aucun article trouvé.</p>";
+        return;
+    }
+
+    list.forEach(product => {
+
+        const card = document.createElement("div");
+
+        card.className = "product";
+
+        card.innerHTML = `
+            <img src="${product.image}" alt="${product.name}">
+            <div class="product-info">
+                <h3>${product.name}</h3>
+                <div class="price">${product.price} F CFP</div>
+                <div class="city">${product.city}</div>
+            </div>
+        `;
+
+        container.appendChild(card);
+    });
+}
+
+function searchProducts() {
+
+    const search = document
+        .getElementById("searchInput")
+        .value
+        .toLowerCase();
+
+    const filtered = products.filter(product =>
+        product.name.toLowerCase().includes(search) ||
+        product.category.toLowerCase().includes(search) ||
+        product.city.toLowerCase().includes(search)
+    );
+
+    displayProducts(filtered);
+}
+
+function filterCategory(category) {
+
+    let filtered;
+
+    if (category === "Vêtements") {
+
+        const clothing = [
+            "Hauts",
+            "Shorts",
+            "Pantalons",
+            "Robes",
+            "Jupes",
+            "Vestes & Manteaux",
+            "Ensembles",
+            "Autres vêtements"
+        ];
+
+        filtered = products.filter(product =>
+            clothing.includes(product.category)
+        );
+
+    } else if (category === "Accessoires") {
+
+        const accessories = [
+            "Chaussures",
+            "Sacs",
+            "Bijoux",
+            "Lunettes",
+            "Chapeaux & Casquettes",
+            "Ceintures",
+            "Accessoires cheveux",
+            "Autres accessoires"
+        ];
+
+        filtered = products.filter(product =>
+            accessories.includes(product.category)
+        );
+
+    } else {
+        filtered = products;
+    }
+
+    displayProducts(filtered);
+
+    document.getElementById("productsSection")
+        .scrollIntoView({ behavior: "smooth" });
+}
+
+function filterSubcategory(category) {
+
+    const filtered = products.filter(product =>
+        product.category === category
+    );
+
+    displayProducts(filtered);
+
+    document.getElementById("productsSection")
+        .scrollIntoView({ behavior: "smooth" });
+}
+
+function showNew() {
+
+    displayProducts(products);
+
+    document.getElementById("productsSection")
+        .scrollIntoView({ behavior: "smooth" });
+}
+
+function showHome() {
+
+    displayProducts(products);
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+}
+
+function scrollToProducts() {
+
+    document.getElementById("productsSection")
+        .scrollIntoView({ behavior: "smooth" });
+}
+
+function openSell() {
+
+    document.getElementById("sellModal").style.display = "flex";
+}
+
+function openAccount() {
+
+    document.getElementById("accountModal").style.display = "flex";
+}
+
+function closeModals() {
+
+    document.getElementById("sellModal").style.display = "none";
+    document.getElementById("accountModal").style.display = "none";
+}
+
+function addProduct() {
+
+    const name = document.getElementById("itemName").value;
+    const category = document.getElementById("itemCategory").value;
+    const price = document.getElementById("itemPrice").value;
+    const city = document.getElementById("itemCity").value;
+    const description = document.getElementById("itemDescription").value;
+    const imageFile = document.getElementById("itemImage").files[0];
+
+    if (!name || !category || !price || !city) {
+
+        alert("Merci de remplir les informations principales.");
+
+        return;
+    }
+
+    if (imageFile) {
+
+        const reader = new FileReader();
+
+        reader.onload = function(event) {
+
+            createProduct(
+                name,
+                category,
+                price,
+                city,
+                description,
+                event.target.result
+            );
+        };
+
+        reader.readAsDataURL(imageFile);
+
+    } else {
+
+        createProduct(
+            name,
+            category,
+            price,
+            city,
+            description,
+            "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=600&q=80"
+        );
+    }
+}
+
+function createProduct(name, category, price, city, description, image) {
+
+    products.unshift({
+        name: name,
+        category: category,
+        price: Number(price),
+        city: city,
+        description: description,
+        image: image
+    });
+
+    displayProducts();
+
+    closeModals();
+
+    document.getElementById("itemName").value = "";
+    document.getElementById("itemCategory").value = "";
+    document.getElementById("itemPrice").value = "";
+    document.getElementById("itemCity").value = "";
+    document.getElementById("itemDescription").value = "";
+    document.getElementById("itemImage").value = "";
+
+    document.getElementById("productsSection")
+        .scrollIntoView({ behavior: "smooth" });
+}
+
+async function login() {
+
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    const message = document.getElementById("accountMessage");
+
+    if (!email || !password) {
+
+        message.textContent = "Entre ton e-mail et ton mot de passe.";
+
+        return;
+    }
+
+    const { data, error } = await supabase.auth.signInWithPassword({
+        email: email,
+        password: password
+    });
+
+    if (error) {
+
+        message.textContent = "Connexion impossible : " + error.message;
+
+        return;
+    }
+
+    message.textContent = "Connexion réussie !";
+
+    console.log(data);
+}
+
+displayProducts();
+
+</script>
+
+</body>
+</html>
